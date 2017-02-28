@@ -228,12 +228,12 @@ function updateMachines(req, res) {
          var editedMachineList = machineList;
          checkInInfo.dryerChanges.forEach(function(dryerObj) {
            if(dryerObj.newState == "inUse") {
-             if (!(S(machineList[dryerObj.machNum].state).contains('inUse'))){
+             if (!(s(machineList[dryerObj.machNum].state).contains('inUse'))){
                editedMachineList[dryerObj.machNum].state = "inUse"
                editedDryersInUse++;
              }
            } else {
-             if(!(S(machineList[dryerObj.machNum].state).contains('free'))){
+             if(!(s(machineList[dryerObj.machNum].state).contains('free'))){
                machineList[dryerObj.machNum].state = "free"
                editedDryersInUse--;
              }
@@ -241,19 +241,19 @@ function updateMachines(req, res) {
          });
          checkInInfo.washerChanges.forEach(function(washerObj) {
            if(washerObj.newState == "inUse") {
-             if (!(S(machineList[washerObj.machNum].state).contains('inUse'))){
+             if (!(s(machineList[washerObj.machNum].state).contains('inUse'))){
                editedMachineList[washerObj.machNum].state = "inUse"
                editedWashersInUse++;
              }
            } else {
-             if(!(S(machineList[washerObj.machNum].state).contains('free'))){
+             if(!(s(machineList[washerObj.machNum].state).contains('free'))){
                machineList[washerObj.machNum].state = "free"
                editedWashersInUse--;
              }
            }
          });
 
-         updateLocationDB(locationID, locationName, washerCount, editedWashersInUse, dryerCount, editedDryersInUse, CheckInCount, editedMachineList, function(){
+         updateLocationDB(locationID, locationName, washerCount, editedWashersInUse, dryerCount, editedDryersInUse, checkInCount, editedMachineList, function(){
            var JSONresultCode = {
              "result" : "200"
            }
