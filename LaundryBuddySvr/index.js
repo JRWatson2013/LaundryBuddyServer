@@ -31,15 +31,46 @@ var server = http.createServer (function (req, res) {
     case '/newLocation':
       newLocation(req, res)
       break
+    case '/deleteLocation':
+      deleteLocation(req, res)
+      break
     default:
       res.end('404: You arent supposed to be here. Go away.')
   }
-})
+});
 
 server.listen(process.env.PORT || port)
 console.log('listening!')
 
 //subroutines
+
+function deleteLocation(req, res) {
+  var contentType = 'text/html'
+  if(req.method == 'POST') {
+    var body = ' ';
+    req.on('data', function (data) {
+      body += data;
+      if(body.length > 1e6) {
+        req.connection.destroy();
+      }
+    });
+    req.on('end', function(data) {
+      var targetLocation = JSON.parse(s(body).strip('locationID=').s.trim());
+      console.log("deleteLocation: " + JSON.stringify(targetLocation));
+      removeLocationDB(targetLocation.locationID, function(){
+        var JSONresultCode = {
+          "result" : "200"
+        }
+        res.end(JSON.stringify(JSONresultCode));
+      })
+    })
+  } else {
+    var JSONresultCode = {
+      "result" : "400"
+    }
+    res.end(JSON.stringify(JSONresultCode));
+  }
+}
 
 function newLocation(req, res) {
     var contentType = 'text/html'
@@ -52,22 +83,31 @@ function newLocation(req, res) {
         }
       });
       req.on('end', function(data) {
-        var newLocation = JSON.parse(s(body).strip('newLocationJSON=').s)
+        var newLocation = JSON.parse(s(body).strip('newLocationJSON=').s.trim());
         console.log("newLocation: " + JSON.stringify(newLocation));
         getLocationDB(newLocation.locationID, function(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, checkInCount, machineList){
           if(locationID != -1) {
             console.log("newLocation: call attempted to duplicate an existing location. Ignoring.");
-            res.end('403');
+            var JSONresultCode = {
+              "result" : "403"
+            }
+            res.end(JSON.stringify(JSONresultCode));
           } else {
             insertLocationDB(newLocation.locationID, newLocation.locationName, newLocation.washerCount, newLocation.washersInUse, newLocation.dryerCount, newLocation.dryersInUse, newLocation.checkInCount, newLocation.machineList, function(){
-              res.end("200");
+              var JSONresultCode = {
+                "result" : "200"
+              }
+              res.end(JSON.stringify(JSONresultCode));
             });
           }
         });
       });
     } else {
       console.log("newLocation: Bad Request!");
-      res.end('400');
+      var JSONresultCode = {
+        "result" : "400"
+      }
+      res.end(JSON.stringify(JSONresultCode));
     }
 }
 
@@ -82,12 +122,15 @@ function checkIn(req, res) {
       }
     });
     req.on('end', function(data) {
-      var checkInAction = JSON.parse(s(body).strip('checkInAction=').s)
+      var checkInAction = JSON.parse(s(body).strip('checkInAction=').s.trim());
       console.log("checkIn: " + JSON.stringify(checkInAction));
       getLocationDB(checkInAction.locationID, function(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, checkInCount, machineList){
         if(locationID == -1) {
           console.log("checkIn: Bad Request, Invalid Location!");
-          res.end("404");
+          var JSONresultCode = {
+            "result" : "404"
+          }
+          res.end(JSON.stringify(JSONresultCode));
         } else {
           var editedCheckInCount = checkInCount;
           if(checkInAction.inLocation = true) {
@@ -96,14 +139,20 @@ function checkIn(req, res) {
             editedCheckInCount = (editedCheckInCount - 1);
           }
             updateLocationDB(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, editedCheckInCount, machineList, function(){
-              res.end("200");
+              var JSONresultCode = {
+                "result" : "200"
+              }
+              res.end(JSON.stringify(JSONresultCode));
             });
         }
       })
     });
   } else {
     console.log("checkIn: Bad Request!");
-    res.end('400');
+    var JSONresultCode = {
+      "result" : "400"
+    }
+    res.end(JSON.stringify(JSONresultCode));
   }
 }
 
@@ -130,8 +179,9 @@ function getPlaceInfo(req, res) {
 
     req.on('end', function() {
       console.log("request for location: " + body);
-      var locationRequested = s(body).strip('location=').s
-      getLocationDB(locationRequested, function(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, checkInCount, machineList){
+      var locationRequestedString = s(body).strip('location=').s.trim();
+      var locationRequestedJSON = JSON.parse(locationRequestedString);
+      getLocationDB(locationRequestedJSON.location, function(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, checkInCount, machineList){
         var locationInfoJSON = {
           "locationID" : locationID,
           "locationName" : locationName,
@@ -146,7 +196,10 @@ function getPlaceInfo(req, res) {
       })
     })
   } else {
-    res.end("400");
+    var JSONresultCode = {
+      "result" : "400"
+    }
+    res.end(JSON.stringify(JSONresultCode));
     console.log('getPlaceInfo: Bad request')
   }
 }
@@ -162,7 +215,7 @@ function updateMachines(req, res) {
      }
    });
    req.on('end', function() {
-     var processedBody = s(body).strip('checkInJSON=').s
+     var processedBody = s(body).strip('checkInJSON=').s.trim();
      console.log("updateMachines: " + processedBody);
      var checkInInfo = JSON.parse(processedBody)
      getLocationDB(checkInInfo.locationID, function(locationID, locationName, washerCount, washersInUse, dryerCount, dryersInUse, checkInCount, machineList){
@@ -201,14 +254,20 @@ function updateMachines(req, res) {
          });
 
          updateLocationDB(locationID, locationName, washerCount, editedWashersInUse, dryerCount, editedDryersInUse, CheckInCount, editedMachineList, function(){
-           res.end("200");
+           var JSONresultCode = {
+             "result" : "200"
+           }
+           res.end(JSON.stringify(JSONresultCode));
          })
        }
      })
    })
  } else {
-   res.end("400");
-   console.log('checkIn: Bad request');
+   var JSONresultCode = {
+     "result" : "400"
+   }
+   res.end(JSON.stringify(JSONresultCode));
+   console.log('updateMachines: Bad request');
  }
 }
 
@@ -280,5 +339,19 @@ function insertLocationDB(locationID, locationName, washerCount, washersInUse, d
       db.close();
       callback();
     });
+  });
+}
+
+function removeLocationDB(locationID, callback) {
+  MongoClient.connect(dbUrl, function(err, db) {
+    assert.equal(null, err);
+    console.log("removeLocationDB: Connected to database with no issues!");
+    db.collection('laundromats').deleteOne(
+      {"locationID" : locationID},
+      function(err, results) {
+        console.log("removeLocationDB: " + results);
+        db.close();
+        callback();
+      });
   });
 }
