@@ -227,28 +227,36 @@ function updateMachines(req, res) {
          var editedDryersInUse = dryersInUse;
          var editedMachineList = machineList;
          checkInInfo.dryerChanges.forEach(function(dryerObj) {
-           if(dryerObj.newState == "inUse") {
+           if(dryerObj.newState == 'inUse') {
              if (!(s(machineList[dryerObj.machNum].state).contains('inUse'))){
-               editedMachineList[dryerObj.machNum].state = "inUse"
+               editedMachineList[dryerObj.machNum].state = 'inUse'
                editedDryersInUse++;
              }
-           } else {
+           } else if (dryerObj.newState == 'free'){
              if(!(s(machineList[dryerObj.machNum].state).contains('free'))){
-               machineList[dryerObj.machNum].state = "free"
+               machineList[dryerObj.machNum].state = 'free'
                editedDryersInUse--;
+             }
+           } else {
+             if(!(s(machineList[dryerObj.machNum].state).contains('broken'))){
+               machineList[dryerObj.machNum].state = 'broken'
              }
            }
          });
          checkInInfo.washerChanges.forEach(function(washerObj) {
-           if(washerObj.newState == "inUse") {
+           if(washerObj.newState == 'inUse') {
              if (!(s(machineList[washerObj.machNum].state).contains('inUse'))){
-               editedMachineList[washerObj.machNum].state = "inUse"
+               editedMachineList[washerObj.machNum].state = 'inUse'
                editedWashersInUse++;
              }
-           } else {
+           } else if(dryerObj.newState == 'free'){
              if(!(s(machineList[washerObj.machNum].state).contains('free'))){
-               machineList[washerObj.machNum].state = "free"
+               machineList[washerObj.machNum].state = 'free'
                editedWashersInUse--;
+             }
+           } else {
+             if(!(s(machineList[washerObj.machNum].state).contains('broken'))){
+               machineList[washererObj.machNum].state = 'broken'
              }
            }
          });
