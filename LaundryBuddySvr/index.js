@@ -249,7 +249,7 @@ function updateMachines(req, res) {
                editedMachineList[washerObj.machNum].state = 'inUse'
                editedWashersInUse++;
              }
-           } else if(dryerObj.newState == 'free'){
+           } else if(washerObj.newState == 'free'){
              if(!(s(machineList[washerObj.machNum].state).contains('free'))){
                machineList[washerObj.machNum].state = 'free'
                editedWashersInUse--;
