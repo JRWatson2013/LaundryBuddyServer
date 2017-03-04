@@ -5,7 +5,7 @@ var http = require('http')
 , s = require('string') //stringjs.com
 , MongoClient = require('mongodb').MongoClient
 , assert = require('assert');
-var dbUrl = 'mongodb://localhost:27017/LaundryBuddy';
+var dbUrl = 'mongodb://laundrybuddy-android:lbuddy2017@ds115870.mlab.com:15870/laundrybuddy';
 
 MongoClient.connect(dbUrl, function(err, db) {
   assert.equal(null, err);
